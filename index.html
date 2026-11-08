@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f4f5f7">
+<title>Flip to $1M Dashboard</title>
+<script>
+/* Apply the saved theme before paint. Default is light. */
+(function () {
+  try {
+    if (localStorage.getItem("flip-theme") === "dark") {
+      document.documentElement.setAttribute("data-theme", "dark");
+    }
+  } catch (err) {}
+})();
+</script>
+<script>
+/* ============================================================================
+   DATA
+   Everything the dashboard shows lives in this object.
+   To update the ledger, edit the values here and refresh the page.
+   Source export: data/ledger.csv
+   ============================================================================ */
+const DATA = {
+  title: "Flip to $1M Dashboard",
+  footer: "Status as of Nov 8, 2026",
+  intro: "The CD sale has turned $10.40 into $28.58, and two listings could add about $149 more.",
+  nextMove: {
+    title: "Next move",
+    body: "Sell the PS2 bundle and racing games first. That puts the bankroll around $140–160 before fees for the next HiBid lot."
+  },
+  sections: {
+    ladder: "Doubling ladder to $1M",
+    items: "Every item"
+  },
+  metrics: [
+    {
+      label: "Bankroll",
+      value: "💰 $28.58",
+      detail: "$13.58 after the mystery box",
+      amount: 28.58
+    },
+    {
+      label: "Listed, asking",
+      value: "🏷️ $149.00",
+      detail: "2 active listings",
+      amount: 149
+    },
+    {
+      label: "Initial money invested",
+      value: "🌱 $15.81",
+      detail: "$10.40 CD box lot + $5.41 power cord",
+      amount: 15.81
+    }
+  ],
+  ladder: {
+    start: 10.4,
+    steps: 18,
+    youAmount: 28.58,
+    youLabel: "You: $28.58"
+  },
+  filters: [
+    { id: "all", label: "All" },
+    { id: "out", label: "Money out" },
+    { id: "in", label: "Money in" },
+    { id: "list", label: "To list" }
+  ],
+  paidFrom: {
+    pocket: "💵 New money",
+    profits: "🔁 Reinvested"
+  },
+  items: [
+    {
+      date: "11/03",
+      item: "CD box lot (CDs + PS2 Slim bundle), lot 1708",
+      kind: "buy",
+      amount: 10.4,
+      paidFrom: "pocket",
+      details: "Pending: PS2 bundle, racing games, Bible, extension cord",
+      source: "McManus HiBid",
+      link: null
+    },
+    {
+      date: "11/02",
+      item: "Figure-8 power cable for PS2",
+      kind: "buy",
+      amount: 5.41,
+      paidFrom: "pocket",
+      details: "Half of $10.82 (2 bought, 1 personal)",
+      source: "eBay",
+      link: null
+    },
+    {
+      date: "11/05",
+      item: "CD lot (from flip #1 box)",
+      kind: "sale",
+      amount: 44.39,
+      paidFrom: null,
+      details: "Sold $64.39, less $8.93 fees, $11.07 postage",
+      source: "eBay",
+      link: null
+    },
+    {
+      date: "11/05",
+      item: "PS2 Slim silver bundle",
+      kind: "listed",
+      amount: 110,
+      paidFrom: null,
+      details: "$110 OBO + $11.45 ship",
+      source: "eBay",
+      link: "https://www.ebay.com/itm/237166188039"
+    },
+    {
+      date: "11/07",
+      item: "NFS Underground + Midnight Club 3",
+      kind: "listed",
+      amount: 39,
+      paidFrom: null,
+      details: "$39 OBO + $5.90 ship",
+      source: "eBay",
+      link: "https://www.ebay.com/itm/237170543785"
+    },
+    {
+      date: "11/05",
+      item: "Book (Bible)",
+      kind: "todo",
+      amount: null,
+      paidFrom: null,
+      details: "To list",
+      source: "eBay",
+      link: null
+    },
+    {
+      date: "11/05",
+      item: "New extension cord",
+      kind: "todo",
+      amount: null,
+      paidFrom: null,
+      details: "To list",
+      source: "eBay",
+      link: null
+    },
+    {
+      date: "11/08",
+      item: "CD mystery box + laptop, disc player, electronics",
+      kind: "buy",
+      amount: 15,
+      paidFrom: "profits",
+      details: "About $15, pickup Mon 11/9",
+      source: "McManus HiBid",
+      link: null
+    }
+  ]
+};
+</script>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f4f5f7;
+    --surface: #ffffff;
+    --text: #1b1e24;
+    --muted: #5e6772;
+    --line: #e3e6eb;
+    --thead: #f7f8fa;
+    --hover: #f3f5f7;
+    --red: #E5484D;
+    --green: #30A46C;
+    --pale: #6eae88;
+    --pale-border: #a9d7c0;
+    --ask-bg: #f3faf6;
+    --dot-stroke: #c1c8d2;
+    --link: #1f7a4d;
+    --next-bg: #eef8f3;
+    --shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  }
+
+  [data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #101114;
+    --surface: #1a1d24;
+    --text: #f3f4f6;
+    --muted: #aeb6c2;
+    --line: #2d3340;
+    --thead: #20242d;
+    --hover: #232833;
+    --pale: #b7e6cf;
+    --pale-border: #6eae8c;
+    --ask-bg: #15261e;
+    --dot-stroke: #66717f;
+    --link: #8edcb8;
+    --next-bg: #14261c;
+    --shadow: none;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji";
+    font-size: 16px;
+    line-height: 1.45;
+  }
+
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 20px 16px 48px;
+  }
+
+  .site-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 16px;
+    padding-bottom: 16px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(1.45rem, 4vw, 2rem);
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    font-weight: 720;
+  }
+
+  h2 {
+    margin: 0 0 8px;
+    font-size: 1.15rem;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+  }
+
+  button, input { font: inherit; color: inherit; }
+
+  button { cursor: pointer; }
+
+  :focus-visible {
+    outline: 2px solid var(--green);
+    outline-offset: 2px;
+  }
+
+  .theme-toggle {
+    flex: 0 0 auto;
+    min-height: 40px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--shadow);
+  }
+
+  .theme-toggle:hover { border-color: var(--muted); }
+
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .metric {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0;
+    padding: 14px 16px 16px;
+    background: var(--surface);
+    border: 2px solid #30A46C;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+  }
+
+  .metric-label {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 650;
+    color: var(--muted);
+  }
+
+  .metric-value {
+    margin: 2px 0 0;
+    font-size: clamp(1.45rem, 2.5vw, 1.85rem);
+    font-weight: 750;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .metric-detail {
+    margin: 2px 0 0;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .intro {
+    margin: 16px 0 0;
+    max-width: 46rem;
+    font-size: 1.0625rem;
+    line-height: 1.5;
+  }
+
+  section + section { margin-top: 28px; }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: var(--shadow);
+  }
+
+  .note {
+    margin: 0 0 12px;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .ladder-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  #ladder-svg { display: block; max-width: none; }
+
+  #ladder-svg text { font-family: inherit; }
+
+  .ladder-track { stroke: var(--line); stroke-width: 2; }
+
+  .rung.done { stroke: rgba(48, 164, 108, 0.45); stroke-width: 2; }
+  .rung.todo { stroke: var(--line); stroke-width: 2; }
+
+  .dot-done { fill: #30A46C; }
+  .dot-open { fill: var(--surface); stroke: var(--dot-stroke); stroke-width: 2; }
+
+  .rung-label { font-size: 13px; font-variant-numeric: tabular-nums; }
+  .rung-label.done { fill: #30A46C; font-weight: 700; }
+  .rung-label.todo { fill: var(--muted); font-weight: 560; }
+
+  .you-pill { fill: var(--surface); stroke: #30A46C; stroke-width: 1.5; }
+  .you-text { fill: var(--text); font-size: 12px; font-weight: 700; }
+  .you-stem { stroke: #30A46C; stroke-width: 1.5; stroke-dasharray: 3 3; }
+  .you-mark { fill: #30A46C; stroke: var(--surface); stroke-width: 2; }
+
+  .section-head { margin-bottom: 10px; }
+
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 12px;
+  }
+
+  .tab {
+    min-height: 40px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--text);
+  }
+
+  .tab:hover { border-color: var(--muted); }
+
+  .tab[aria-selected="true"] {
+    background: #30A46C;
+    border-color: #30A46C;
+    color: #ffffff;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    align-items: center;
+    margin: 0 0 12px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .scroll-hint {
+    display: none;
+    margin: 0 0 8px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+  }
+
+  table {
+    width: 100%;
+    min-width: 860px;
+    border-collapse: collapse;
+  }
+
+  th, td {
+    padding: 11px 14px;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--line);
+  }
+
+  th {
+    background: var(--thead);
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody tr:hover td { background: var(--hover); }
+
+  td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.nowrap { white-space: nowrap; }
+
+  .amt { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .amt.out { color: #E5484D; }
+  .amt.in { color: #30A46C; }
+  .amt.ask {
+    color: var(--pale);
+    background: var(--ask-bg);
+    border: 1.5px dashed var(--pale-border);
+    border-radius: 999px;
+    padding: 2px 8px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .amt.muted { color: var(--muted); font-weight: 500; }
+
+  .paid { font-weight: 650; white-space: nowrap; }
+  .paid.out { color: #E5484D; }
+  .paid.in { color: #30A46C; }
+
+  a { color: var(--link); }
+  td a { font-weight: 650; }
+
+  .empty {
+    color: var(--muted);
+    text-align: center;
+    padding: 22px 14px;
+  }
+
+  .next {
+    background: var(--next-bg);
+    border: 1px solid #30A46C;
+    border-radius: 12px;
+    padding: 16px 18px;
+  }
+
+  .next p { margin: 0; line-height: 1.5; }
+
+  footer {
+    margin-top: 28px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  @media (max-width: 720px) {
+    .metrics { grid-template-columns: 1fr; }
+    .wrap { padding: 16px 12px 36px; }
+    .scroll-hint { display: block; }
+    .table-wrap { box-shadow: inset -16px 0 12px -12px rgba(27, 30, 36, 0.28); }
+    table {
+      table-layout: fixed;
+      width: 54rem;
+      min-width: 54rem;
+    }
+    th:nth-child(1), td:nth-child(1) { width: 3.8rem; }
+    th:nth-child(2), td:nth-child(2) { width: 6.6rem; }
+    th:nth-child(3), td:nth-child(3) { width: 11.6rem; padding-left: 6px; padding-right: 6px; }
+    th:nth-child(4), td:nth-child(4) { width: 8.2rem; }
+    th:nth-child(5), td:nth-child(5) { width: 12rem; }
+    th:nth-child(6), td:nth-child(6) { width: 6.4rem; }
+    th:nth-child(7), td:nth-child(7) { width: 5.4rem; }
+    .amt.ask { font-size: 14px; }
+    [data-theme="dark"] .table-wrap {
+      box-shadow: inset -16px 0 12px -12px rgba(255, 255, 255, 0.2);
+    }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="site-header">
+    <h1 id="page-title"></h1>
+    <button type="button" class="theme-toggle" id="theme-toggle" aria-pressed="false">Dark mode</button>
+  </header>
+
+  <main>
+    <section aria-labelledby="page-title">
+      <div id="metrics" class="metrics"></div>
+      <p id="intro" class="intro"></p>
+    </section>
+
+    <section class="panel" aria-labelledby="ladder-heading">
+      <h2 id="ladder-heading"></h2>
+      <p id="ladder-note" class="note"></p>
+      <div class="ladder-scroll" id="ladder-scroll">
+        <svg id="ladder-svg" role="img" aria-labelledby="ladder-title ladder-desc"></svg>
+      </div>
+    </section>
+
+    <section aria-labelledby="items-heading">
+      <div class="section-head">
+        <h2 id="items-heading"></h2>
+      </div>
+      <div id="filters" class="tabs" role="tablist" aria-label="Filter items"></div>
+      <p class="legend">
+        <span class="amt out">−$ money out</span>
+        <span class="amt in">+$ money in</span>
+        <span class="amt ask">+$ asking</span>
+      </p>
+      <p class="scroll-hint">Swipe the table sideways for every column.</p>
+      <div class="table-wrap">
+        <table aria-labelledby="items-heading">
+          <thead>
+            <tr>
+              <th scope="col">Date</th>
+              <th scope="col">Item</th>
+              <th scope="col">Amount</th>
+              <th scope="col">Paid from</th>
+              <th scope="col">Details</th>
+              <th scope="col">Source</th>
+              <th scope="col">Link</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="next" aria-labelledby="next-heading">
+      <h2 id="next-heading"></h2>
+      <p id="next-body"></p>
+    </section>
+  </main>
+
+  <footer id="footer"></footer>
+</div>
+<noscript>This dashboard needs JavaScript. The ledger is in the DATA object at the top of the page.</noscript>
+
+<script>
+(function () {
+  const THEME_KEY = "flip-theme";
+  const SVG_NS = "http://www.w3.org/2000/svg";
+
+  function svgEl(name, attrs) {
+    const node = document.createElementNS(SVG_NS, name);
+    if (attrs) {
+      Object.keys(attrs).forEach(function (key) {
+        node.setAttribute(key, attrs[key]);
+      });
+    }
+    return node;
+  }
+
+  function usd(amount) {
+    return amount.toLocaleString("en-US", { style: "currency", currency: "USD" });
+  }
+
+  function plainAmount(amount) {
+    return amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function ladderCents(startDollars, steps) {
+    let cents = Math.round(startDollars * 100);
+    const values = [];
+    for (let i = 0; i < steps; i += 1) {
+      values.push(cents);
+      cents *= 2;
+    }
+    return values;
+  }
+
+  function currentTheme() {
+    return document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+  }
+
+  function syncThemeButton() {
+    const dark = currentTheme() === "dark";
+    const button = document.getElementById("theme-toggle");
+    button.textContent = dark ? "Light mode" : "Dark mode";
+    button.setAttribute("aria-pressed", dark ? "true" : "false");
+    button.setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode");
+    const themeColor = document.querySelector('meta[name="theme-color"]');
+    if (themeColor) themeColor.setAttribute("content", dark ? "#101114" : "#f4f5f7");
+  }
+
+  function setTheme(theme) {
+    if (theme === "dark") document.documentElement.setAttribute("data-theme", "dark");
+    else document.documentElement.removeAttribute("data-theme");
+    try { localStorage.setItem(THEME_KEY, theme === "dark" ? "dark" : "light"); }
+    catch (err) {}
+    syncThemeButton();
+  }
+
+  function renderHeader() {
+    document.getElementById("page-title").textContent = DATA.title;
+    document.getElementById("intro").textContent = DATA.intro;
+    document.getElementById("footer").textContent = DATA.footer;
+    document.getElementById("next-heading").textContent = DATA.nextMove.title;
+    document.getElementById("next-body").textContent = DATA.nextMove.body;
+    document.getElementById("ladder-heading").textContent = DATA.sections.ladder;
+    document.getElementById("items-heading").textContent = DATA.sections.items;
+
+    const metrics = document.getElementById("metrics");
+    DATA.metrics.forEach(function (metric) {
+      const card = document.createElement("article");
+      card.className = "metric";
+      const label = document.createElement("p");
+      label.className = "metric-label";
+      label.textContent = metric.label;
+      const value = document.createElement("p");
+      value.className = "metric-value";
+      value.textContent = metric.value;
+      const detail = document.createElement("p");
+      detail.className = "metric-detail";
+      detail.textContent = metric.detail;
+      card.append(label, value, detail);
+      metrics.append(card);
+    });
+  }
+
+  function drawLadder() {
+    const host = document.getElementById("ladder-scroll");
+    const svg = document.getElementById("ladder-svg");
+    const width = Math.max(300, host.clientWidth || 300);
+    const steps = DATA.ladder.steps;
+    const rowH = 32;
+    const padTop = 18;
+    const cents = ladderCents(DATA.ladder.start, steps);
+    const youCents = Math.round(DATA.ladder.youAmount * 100);
+    const youIndex = Math.log(DATA.ladder.youAmount / DATA.ladder.start) / Math.log(2);
+    const spineX = 132;
+
+    function yFor(index) {
+      return padTop + index * rowH;
+    }
+
+    const height = yFor(steps - 1) + padTop;
+    const signature = width + "x" + height;
+    if (svg.getAttribute("data-size") === signature) return;
+    svg.setAttribute("data-size", signature);
+    svg.setAttribute("width", String(width));
+    svg.setAttribute("height", String(height));
+    svg.setAttribute("viewBox", "0 0 " + width + " " + height);
+    svg.replaceChildren();
+
+    const title = svgEl("title", { id: "ladder-title" });
+    title.textContent = "Doubling ladder from $10.40 to about $1.36 million";
+    const desc = svgEl("desc", { id: "ladder-desc" });
+    const reachedCount = cents.filter(function (value) { return value <= youCents; }).length;
+    desc.textContent = steps + " dots. " + reachedCount +
+      " are filled green because they are at or below the bankroll. Marker " +
+      DATA.ladder.youLabel + " is at log base 2 of bankroll divided by the $10.40 start.";
+    svg.append(title, desc);
+
+    svg.append(svgEl("line", {
+      x1: spineX,
+      y1: yFor(0),
+      x2: spineX,
+      y2: yFor(steps - 1),
+      class: "ladder-track"
+    }));
+
+    cents.forEach(function (valueCents, index) {
+      const reached = valueCents <= youCents;
+      const y = yFor(index);
+      const dollars = valueCents / 100;
+      const label = usd(dollars);
+      const rungEnd = width - 12 - Math.min(150, label.length * 8);
+      if (rungEnd > spineX + 16) {
+        svg.append(svgEl("line", {
+          x1: spineX + 12,
+          y1: y,
+          x2: rungEnd,
+          y2: y,
+          class: "rung " + (reached ? "done" : "todo")
+        }));
+      }
+      const dot = svgEl("circle", {
+        cx: spineX,
+        cy: y,
+        r: 6.5,
+        class: reached ? "dot-done" : "dot-open"
+      });
+      const tip = svgEl("title");
+      tip.textContent = "Step " + (index + 1) + " of " + steps + ": " + label +
+        (reached ? ". At or below the bankroll." : ". Still ahead.");
+      dot.append(tip);
+      svg.append(dot);
+
+      const text = svgEl("text", {
+        x: width - 8,
+        y: y,
+        "text-anchor": "end",
+        "dominant-baseline": "middle",
+        class: "rung-label " + (reached ? "done" : "todo")
+      });
+      text.textContent = label;
+      svg.append(text);
+    });
+
+    const youY = yFor(Math.max(0, Math.min(steps - 1, youIndex)));
+    const pillW = 112;
+    const pillH = 24;
+    const pillX = 6;
+    const pillY = youY - pillH / 2;
+    svg.append(svgEl("line", {
+      x1: pillX + pillW,
+      y1: youY,
+      x2: spineX - 8,
+      y2: youY,
+      class: "you-stem"
+    }));
+    svg.append(svgEl("rect", {
+      x: pillX,
+      y: pillY,
+      width: pillW,
+      height: pillH,
+      rx: 12,
+      class: "you-pill"
+    }));
+    const youText = svgEl("text", {
+      x: pillX + pillW / 2,
+      y: youY,
+      "text-anchor": "middle",
+      "dominant-baseline": "middle",
+      class: "you-text"
+    });
+    youText.textContent = DATA.ladder.youLabel;
+    svg.append(youText);
+    svg.append(svgEl("circle", {
+      cx: spineX,
+      cy: youY,
+      r: 4,
+      class: "you-mark"
+    }));
+
+    const last = cents[cents.length - 1] / 100;
+    document.getElementById("ladder-note").textContent =
+      "Each dot doubles the last, from " + usd(DATA.ladder.start) + " to " + usd(last) +
+      " (about $1.36M). Filled dots are at or below the " + usd(DATA.ladder.youAmount) + " bankroll.";
+  }
+
+  function amountCell(item) {
+    const span = document.createElement("span");
+    if (item.kind === "buy") {
+      span.className = "amt out";
+      span.textContent = "\u2212$" + plainAmount(item.amount);
+      return span;
+    }
+    if (item.kind === "sale") {
+      span.className = "amt in";
+      span.textContent = "+$" + plainAmount(item.amount);
+      return span;
+    }
+    if (item.kind === "listed") {
+      span.className = "amt ask";
+      span.textContent = "+$" + plainAmount(item.amount) + " (asking)";
+      return span;
+    }
+    span.className = "amt muted";
+    span.textContent = "\u2014";
+    return span;
+  }
+
+  function paidCell(item) {
+    const span = document.createElement("span");
+    if (item.paidFrom === "pocket") {
+      span.className = "paid out";
+      span.textContent = DATA.paidFrom.pocket;
+      return span;
+    }
+    if (item.paidFrom === "profits") {
+      span.className = "paid in";
+      span.textContent = DATA.paidFrom.profits;
+      return span;
+    }
+    span.className = "amt muted";
+    span.textContent = "\u2014";
+    return span;
+  }
+
+  function matches(item, filterId) {
+    if (filterId === "out") return item.kind === "buy";
+    if (filterId === "in") return item.kind === "sale";
+    if (filterId === "list") return item.kind === "todo";
+    return true;
+  }
+
+  function renderRows(filterId) {
+    const body = document.getElementById("rows");
+    body.replaceChildren();
+    const items = DATA.items.filter(function (item) { return matches(item, filterId); });
+    if (!items.length) {
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+      td.colSpan = 7;
+      td.className = "empty";
+      td.textContent = "Nothing in this view.";
+      tr.append(td);
+      body.append(tr);
+      return;
+    }
+    items.forEach(function (item) {
+      const tr = document.createElement("tr");
+      tr.className = "kind-" + item.kind;
+      tr.setAttribute("data-kind", item.kind);
+
+      function cell(text, className) {
+        const td = document.createElement("td");
+        if (className) td.className = className;
+        td.textContent = text;
+        return td;
+      }
+
+      const amountTd = document.createElement("td");
+      amountTd.className = "num";
+      amountTd.append(amountCell(item));
+
+      const paidTd = document.createElement("td");
+      paidTd.append(paidCell(item));
+
+      const linkTd = document.createElement("td");
+      linkTd.className = "nowrap";
+      if (item.link && /^https:\/\//i.test(item.link)) {
+        const a = document.createElement("a");
+        a.href = item.link;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        a.textContent = "View listing";
+        a.title = item.link;
+        linkTd.append(a);
+      } else {
+        const dash = document.createElement("span");
+        dash.className = "amt muted";
+        dash.textContent = "\u2014";
+        linkTd.append(dash);
+      }
+
+      tr.append(
+        cell(item.date, "nowrap"),
+        cell(item.item),
+        amountTd,
+        paidTd,
+        cell(item.details),
+        cell(item.source, "nowrap"),
+        linkTd
+      );
+      body.append(tr);
+    });
+  }
+
+  function renderFilters() {
+    const tabs = document.getElementById("filters");
+    let active = DATA.filters[0].id;
+    const buttons = [];
+
+    function select(id, focus) {
+      active = id;
+      buttons.forEach(function (button, index) {
+        const on = button.getAttribute("data-filter") === id;
+        button.setAttribute("aria-selected", on ? "true" : "false");
+        button.tabIndex = on ? 0 : -1;
+        if (on && focus) button.focus();
+      });
+      renderRows(id);
+    }
+
+    DATA.filters.forEach(function (filter, index) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "tab";
+      button.setAttribute("role", "tab");
+      button.setAttribute("data-filter", filter.id);
+      button.id = "filter-" + filter.id;
+      button.textContent = filter.label;
+      button.addEventListener("click", function () { select(filter.id, false); });
+      tabs.append(button);
+      buttons.push(button);
+    });
+
+    tabs.addEventListener("keydown", function (event) {
+      const current = buttons.findIndex(function (button) {
+        return button.getAttribute("data-filter") === active;
+      });
+      let next = null;
+      if (event.key === "ArrowRight") next = (current + 1) % buttons.length;
+      else if (event.key === "ArrowLeft") next = (current - 1 + buttons.length) % buttons.length;
+      else if (event.key === "Home") next = 0;
+      else if (event.key === "End") next = buttons.length - 1;
+      if (next === null) return;
+      event.preventDefault();
+      select(buttons[next].getAttribute("data-filter"), true);
+    });
+
+    select(active, false);
+  }
+
+  document.getElementById("theme-toggle").addEventListener("click", function () {
+    setTheme(currentTheme() === "dark" ? "light" : "dark");
+  });
+
+  renderHeader();
+  syncThemeButton();
+  renderFilters();
+  drawLadder();
+
+  if (window.ResizeObserver) {
+    new ResizeObserver(function () { drawLadder(); }).observe(document.getElementById("ladder-scroll"));
+  } else {
+    window.addEventListener("resize", drawLadder);
+  }
+})();
+</script>
+</body>
+</html>
