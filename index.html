@@ -66,9 +66,16 @@ const DATA = {
     { id: "in", label: "Money in" },
     { id: "list", label: "To list" }
   ],
-  paidFrom: {
-    pocket: "💵 New money",
-    profits: "🔁 Reinvested"
+  /* Purchase tags. Set item.tag to one of these keys. */
+  tags: {
+    new: {
+      label: "💵 New money",
+      note: "Fresh money put in"
+    },
+    reinvested: {
+      label: "🔁 Reinvested",
+      note: "Paid from profits"
+    }
   },
   items: [
     {
@@ -76,7 +83,7 @@ const DATA = {
       item: "CD box lot (CDs + PS2 Slim bundle), lot 1708",
       kind: "buy",
       amount: 10.4,
-      paidFrom: "pocket",
+      tag: "new",
       details: "Pending: PS2 bundle, racing games, Bible, extension cord",
       source: "McManus HiBid",
       link: null
@@ -86,7 +93,7 @@ const DATA = {
       item: "Figure-8 power cable for PS2",
       kind: "buy",
       amount: 5.41,
-      paidFrom: "pocket",
+      tag: "new",
       details: "Half of $10.82 (2 bought, 1 personal)",
       source: "eBay",
       link: null
@@ -96,7 +103,7 @@ const DATA = {
       item: "CD lot (from flip #1 box)",
       kind: "sale",
       amount: 44.39,
-      paidFrom: null,
+      tag: null,
       details: "Sold $64.39, less $8.93 fees, $11.07 postage",
       source: "eBay",
       link: null
@@ -106,7 +113,7 @@ const DATA = {
       item: "PS2 Slim silver bundle",
       kind: "listed",
       amount: 110,
-      paidFrom: null,
+      tag: null,
       details: "$110 OBO + $11.45 ship",
       source: "eBay",
       link: "https://www.ebay.com/itm/237166188039"
@@ -116,7 +123,7 @@ const DATA = {
       item: "NFS Underground + Midnight Club 3",
       kind: "listed",
       amount: 39,
-      paidFrom: null,
+      tag: null,
       details: "$39 OBO + $5.90 ship",
       source: "eBay",
       link: "https://www.ebay.com/itm/237170543785"
@@ -126,7 +133,7 @@ const DATA = {
       item: "Book (Bible)",
       kind: "todo",
       amount: null,
-      paidFrom: null,
+      tag: null,
       details: "To list",
       source: "eBay",
       link: null
@@ -136,7 +143,7 @@ const DATA = {
       item: "New extension cord",
       kind: "todo",
       amount: null,
-      paidFrom: null,
+      tag: null,
       details: "To list",
       source: "eBay",
       link: null
@@ -146,7 +153,7 @@ const DATA = {
       item: "CD mystery box + laptop, disc player, electronics",
       kind: "buy",
       amount: 15,
-      paidFrom: "profits",
+      tag: "reinvested",
       details: "About $15, pickup Mon 11/9",
       source: "McManus HiBid",
       link: null
@@ -166,6 +173,10 @@ const DATA = {
     --hover: #f3f5f7;
     --red: #E5484D;
     --green: #30A46C;
+    --tag-new: #C4121A;
+    --tag-new-bg: #FDE8E8;
+    --tag-re: #0E7A45;
+    --tag-re-bg: #E5F6EC;
     --pale: #6eae88;
     --pale-border: #a9d7c0;
     --ask-bg: #f3faf6;
@@ -186,6 +197,10 @@ const DATA = {
     --hover: #232833;
     --pale: #b7e6cf;
     --pale-border: #6eae8c;
+    --tag-new: #FF8F92;
+    --tag-new-bg: #3A1719;
+    --tag-re: #5DDBA0;
+    --tag-re-bg: #143024;
     --ask-bg: #15261e;
     --dot-stroke: #66717f;
     --link: #8edcb8;
@@ -438,9 +453,33 @@ const DATA = {
   }
   .amt.muted { color: var(--muted); font-weight: 500; }
 
-  .paid { font-weight: 650; white-space: nowrap; }
-  .paid.out { color: #E5484D; }
-  .paid.in { color: #30A46C; }
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.45;
+    white-space: nowrap;
+  }
+  .tag-new { color: var(--tag-new); background: var(--tag-new-bg); }
+  .tag-reinvested { color: var(--tag-re); background: var(--tag-re-bg); }
+
+  .tag-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    margin: 0 0 12px;
+    padding: 0;
+    list-style: none;
+  }
+  .tag-legend li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 13px;
+  }
 
   a { color: var(--link); }
   td a { font-weight: 650; }
@@ -521,6 +560,7 @@ const DATA = {
         <span class="amt in">+$ money in</span>
         <span class="amt ask">+$ asking</span>
       </p>
+      <ul class="tag-legend" id="tag-legend" aria-label="Purchase tags"></ul>
       <p class="scroll-hint">Swipe the table sideways for every column.</p>
       <div class="table-wrap">
         <table aria-labelledby="items-heading">
@@ -776,21 +816,33 @@ const DATA = {
     return span;
   }
 
-  function paidCell(item) {
+  function tagCell(item) {
+    const spec = item.tag && DATA.tags[item.tag];
+    if (!spec) {
+      const dash = document.createElement("span");
+      dash.className = "amt muted";
+      dash.textContent = "\u2014";
+      return dash;
+    }
     const span = document.createElement("span");
-    if (item.paidFrom === "pocket") {
-      span.className = "paid out";
-      span.textContent = DATA.paidFrom.pocket;
-      return span;
-    }
-    if (item.paidFrom === "profits") {
-      span.className = "paid in";
-      span.textContent = DATA.paidFrom.profits;
-      return span;
-    }
-    span.className = "amt muted";
-    span.textContent = "\u2014";
+    span.className = "tag tag-" + item.tag;
+    span.textContent = spec.label;
     return span;
+  }
+
+  function renderTagLegend() {
+    const list = document.getElementById("tag-legend");
+    Object.keys(DATA.tags).forEach(function (key) {
+      const spec = DATA.tags[key];
+      const li = document.createElement("li");
+      const pill = document.createElement("span");
+      pill.className = "tag tag-" + key;
+      pill.textContent = spec.label;
+      const note = document.createElement("span");
+      note.textContent = spec.note;
+      li.append(pill, note);
+      list.append(li);
+    });
   }
 
   function matches(item, filterId) {
@@ -831,7 +883,7 @@ const DATA = {
       amountTd.append(amountCell(item));
 
       const paidTd = document.createElement("td");
-      paidTd.append(paidCell(item));
+      paidTd.append(tagCell(item));
 
       const linkTd = document.createElement("td");
       linkTd.className = "nowrap";
@@ -915,6 +967,7 @@ const DATA = {
 
   renderHeader();
   syncThemeButton();
+  renderTagLegend();
   renderFilters();
   drawLadder();
 
