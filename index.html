@@ -25,7 +25,7 @@
 const DATA = {
   title: "Flip to $1M Dashboard",
   footer: "Status as of Nov 9, 2026",
-  intro: "The CD sale lifted the bankroll to $28.58. After the $15.61 mystery box, $12.97 is available, and two listings could add about $149 more.",
+  intro: "After the $15.61 mystery box, $12.97 is available, and two listings could add about $149 more.",
   nextMove: {
     title: "Next move",
     body: "Sell the PS2 bundle and racing games first. That puts the bankroll around $140–160 before fees for the next HiBid lot."
@@ -38,7 +38,6 @@ const DATA = {
     {
       label: "Bankroll",
       value: "💰 $12.97",
-      detail: "$28.58 before the $15.61 mystery box",
       amount: 12.97
     },
     {
@@ -683,10 +682,13 @@ const DATA = {
       const value = document.createElement("p");
       value.className = "metric-value";
       value.textContent = metric.value;
-      const detail = document.createElement("p");
-      detail.className = "metric-detail";
-      detail.textContent = metric.detail;
-      card.append(label, value, detail);
+      card.append(label, value);
+      if (metric.detail) {
+        const detail = document.createElement("p");
+        detail.className = "metric-detail";
+        detail.textContent = metric.detail;
+        card.append(detail);
+      }
       metrics.append(card);
     });
   }
