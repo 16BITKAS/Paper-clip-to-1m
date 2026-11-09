@@ -24,8 +24,8 @@
    ============================================================================ */
 const DATA = {
   title: "Flip to $1M Dashboard",
-  footer: "Status as of Nov 8, 2026",
-  intro: "The CD sale has turned $10.40 into $28.58, and two listings could add about $149 more.",
+  footer: "Status as of Nov 9, 2026",
+  intro: "The CD sale lifted the bankroll to $28.58. After the $15.61 mystery box, $12.97 is available, and two listings could add about $149 more.",
   nextMove: {
     title: "Next move",
     body: "Sell the PS2 bundle and racing games first. That puts the bankroll around $140–160 before fees for the next HiBid lot."
@@ -37,9 +37,9 @@ const DATA = {
   metrics: [
     {
       label: "Bankroll",
-      value: "💰 $28.58",
-      detail: "$13.58 after the mystery box",
-      amount: 28.58
+      value: "💰 $12.97",
+      detail: "$28.58 before the $15.61 mystery box",
+      amount: 12.97
     },
     {
       label: "Listed, asking",
@@ -57,8 +57,8 @@ const DATA = {
   ladder: {
     start: 10.4,
     steps: 18,
-    youAmount: 28.58,
-    youLabel: "You: $28.58"
+    youAmount: 12.97,
+    youLabel: "You: $12.97"
   },
   filters: [
     { id: "all", label: "All" },
@@ -75,6 +75,10 @@ const DATA = {
     reinvested: {
       label: "🔁 Reinvested",
       note: "Paid from profits"
+    },
+    free: {
+      label: "🎁 Free",
+      note: "Picked up at no cost"
     }
   },
   items: [
@@ -150,12 +154,22 @@ const DATA = {
     },
     {
       date: "11/08",
-      item: "CD mystery box + laptop, disc player, electronics",
+      item: "CD mystery box + Dell Latitude laptop, disc player, electronics",
       kind: "buy",
-      amount: 15,
+      amount: 15.61,
       tag: "reinvested",
-      details: "About $15, pickup Mon 11/9",
+      details: "Lot 1553, invoice 153002; $12 + $2.40 premium + $1.21 tax; pickup Mon 11/9",
       source: "McManus HiBid",
+      link: null
+    },
+    {
+      date: "11/08",
+      item: "Big crate of CDs",
+      kind: "buy",
+      amount: 0,
+      tag: "free",
+      details: "Free on OfferUp; cleaning and testing before listing",
+      source: "OfferUp",
       link: null
     }
   ]
@@ -177,6 +191,8 @@ const DATA = {
     --tag-new-bg: #FDE8E8;
     --tag-re: #0E7A45;
     --tag-re-bg: #E5F6EC;
+    --tag-free: #2F4A6E;
+    --tag-free-bg: #E7EEF8;
     --pale: #6eae88;
     --pale-border: #a9d7c0;
     --ask-bg: #f3faf6;
@@ -201,6 +217,8 @@ const DATA = {
     --tag-new-bg: #3A1719;
     --tag-re: #5DDBA0;
     --tag-re-bg: #143024;
+    --tag-free: #C5D7F2;
+    --tag-free-bg: #1C2A3D;
     --ask-bg: #15261e;
     --dot-stroke: #66717f;
     --link: #8edcb8;
@@ -464,6 +482,7 @@ const DATA = {
   }
   .tag-new { color: var(--tag-new); background: var(--tag-new-bg); }
   .tag-reinvested { color: var(--tag-re); background: var(--tag-re-bg); }
+  .tag-free { color: var(--tag-free); background: var(--tag-free-bg); }
 
   .tag-legend {
     display: flex;
