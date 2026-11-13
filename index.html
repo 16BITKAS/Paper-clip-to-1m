@@ -25,10 +25,10 @@
 const DATA = {
   title: "Flip to $1M Dashboard",
   footer: "Status as of Nov 13, 2026",
-  intro: "The bankroll is $130.99 after the $38.91 NES lot earnings, before postage, and five listings could add about $213 more.",
+  intro: "The bankroll is $150.97 after the NES and rock-CD lot earnings, before postage, and four listings could add about $188 more.",
   nextMove: {
     title: "Next move",
-    body: "Buy the NES lot postage label so the $130.99 bankroll can be adjusted. The five remaining listings ask $213.25 combined."
+    body: "Buy the NES and rock-lot postage labels so the $150.97 bankroll can be adjusted. The four remaining listings ask $188.25 combined."
   },
   sections: {
     ladder: "Doubling ladder to $1M",
@@ -37,15 +37,15 @@ const DATA = {
   metrics: [
     {
       label: "Bankroll",
-      value: "💰 $130.99",
-      detail: "Includes $38.91 NES earnings; postage label still pending",
-      amount: 130.99
+      value: "💰 $150.97",
+      detail: "Includes $38.91 NES and $19.98 rock-lot earnings; postage still pending",
+      amount: 150.97
     },
     {
       label: "Listed, asking",
-      value: "🏷️ $213.25",
-      detail: "5 active listings",
-      amount: 213.25
+      value: "🏷️ $188.25",
+      detail: "4 active listings",
+      amount: 188.25
     },
     {
       label: "Initial money invested",
@@ -57,8 +57,8 @@ const DATA = {
   ladder: {
     start: 10.4,
     steps: 18,
-    youAmount: 130.99,
-    youLabel: "You: $130.99"
+    youAmount: 150.97,
+    youLabel: "You: $150.97"
   },
   filters: [
     { id: "all", label: "All" },
@@ -174,16 +174,6 @@ const DATA = {
     },
     {
       date: "11/09",
-      item: "8 Rock CDs Lot",
-      kind: "listed",
-      amount: 25,
-      tag: null,
-      details: "$25 OBO + $4.39 Media Mail; from mystery box lot 1553",
-      source: "eBay",
-      link: "https://www.ebay.com/itm/237174006449"
-    },
-    {
-      date: "11/09",
       item: "30 Hip Hop R&B CD Lot",
       kind: "listed",
       amount: 55.25,
@@ -241,6 +231,16 @@ const DATA = {
       details: "Sold $45.98 gross ($38.22 + $7.76 ship), less $7.07 fees; earnings $38.91; postage TBD",
       source: "eBay",
       link: "https://www.ebay.com/itm/237175940613"
+    },
+    {
+      date: "11/13",
+      item: "8 Rock CDs Lot",
+      kind: "sale",
+      amount: 19.98,
+      tag: null,
+      details: "Sold $24.39 gross ($20 + $4.39 ship), less $4.41 fees; earnings $19.98; postage TBD",
+      source: "eBay",
+      link: "https://www.ebay.com/itm/237174006449"
     }
   ]
 };
