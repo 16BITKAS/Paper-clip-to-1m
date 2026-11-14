@@ -66,6 +66,21 @@ const DATA = {
       detail: "Completed sold listings"
     }
   ],
+  /* Detail-popup rows, taken from the ledger. Missing fields stay blank. */
+  buys: [
+    { date: "11/01", item: "CD box lot (CDs + silver PS2 Slim + matching silver controller + AV cables + memory card)", cost: 10.4, tag: "new", source: "McManus HiBid, lot 1708", link: null },
+    { date: "11/02", item: "Figure-8 power cable (for PS2 Slim)", cost: 5.41, tag: "new", source: "eBay", link: null },
+    { date: "11/08", item: "CD mystery box + Dell Latitude laptop, disc player, electronics", cost: 15.61, tag: "reinvested", source: "McManus HiBid, lot 1553", link: null },
+    { date: "11/08", item: "Big crate of CDs", cost: 0, tag: null, source: "OfferUp", link: null },
+    { date: "11/12", item: "Shipping label printing (DKC2 + PS2)", cost: 2.75, tag: "reinvested", source: "in person", link: null }
+  ],
+  sales: [
+    { date: "11/05", item: "CD lot (from flip #1 box)", sale: 64.39, fees: 8.93, postage: 11.07, net: 44.39, link: null },
+    { date: "11/11", item: "PS2 Slim silver console bundle (controller + memory card)", sale: 94.5, fees: 14.26, postage: 8.71, net: 71.53, link: "https://www.ebay.com/itm/237166188039" },
+    { date: "11/11", item: "Nintendo Donkey Kong Country 2: Diddy's Kong Quest SNES NTSC-U/C Game", sale: 20, fees: 3.27, postage: 6.4, net: 10.33, link: "https://www.ebay.com/itm/237176017749" },
+    { date: "11/13", item: "8 Rock CDs Lot (Green Day American Idiot single, INXS Live Baby Live, Temple of the Dog, Eleanor McEvoy What's Following Me?, Alice in Chains Sap, Whitesnake Slide It In, Guns N' Roses The Spaghetti Incident?, Incubus Make Yourself)", sale: 24.39, fees: 4.41, postage: 5.86, net: 14.12, link: "https://www.ebay.com/itm/237174006449" },
+    { date: "11/13", item: "Nintendo NES Game Lot of 8 Tested Working Mario Duck Hunt Klax Wrestling", sale: 45.98, fees: 7.07, postage: 7.24, net: 31.67, link: "https://www.ebay.com/itm/237175940613" }
+  ],
   ladder: {
     start: 10.4,
     steps: 18,
@@ -405,11 +420,95 @@ const DATA = {
     border: 1px solid #30A46C;
     border-radius: 12px;
     box-shadow: var(--shadow);
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    color: inherit;
   }
+
+  .count:hover { border-color: var(--green, #30A46C); background: var(--hover); }
 
   .count .metric-value {
     font-size: 1.45rem;
   }
+
+  .count-hint {
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .modal {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+
+  .modal[hidden] { display: none; }
+
+  .modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(16, 24, 40, 0.45);
+  }
+
+  [data-theme="dark"] .modal-backdrop {
+    background: rgba(0, 0, 0, 0.65);
+  }
+
+  .modal-panel {
+    position: relative;
+    z-index: 1;
+    width: min(960px, 100%);
+    max-height: 90vh;
+    overflow: auto;
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 16px;
+  }
+
+  .modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .modal-head h2 {
+    margin: 0;
+    font-size: 1.15rem;
+  }
+
+  .modal-close {
+    flex: 0 0 auto;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 22px;
+    line-height: 1;
+  }
+
+  .modal-close:hover { border-color: var(--muted); }
+
+  .modal .table-wrap { max-width: 100%; }
+
+  .modal tfoot td {
+    font-weight: 700;
+    background: var(--thead);
+  }
+
+  body.modal-open { overflow: hidden; }
 
   .metric {
     display: flex;
@@ -724,6 +823,24 @@ const DATA = {
 
   <footer id="footer"></footer>
 </div>
+<div id="detail-modal" class="modal" hidden>
+  <div class="modal-backdrop" data-close="true"></div>
+  <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title" tabindex="-1">
+    <div class="modal-head">
+      <h2 id="modal-title"></h2>
+      <button type="button" class="modal-close" id="modal-close" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="table-wrap">
+        <table id="modal-table">
+          <thead id="modal-thead"></thead>
+          <tbody id="modal-tbody"></tbody>
+          <tfoot id="modal-tfoot"></tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
 <noscript>This dashboard needs JavaScript. The ledger is in the DATA object at the top of the page.</noscript>
 
 <script>
@@ -812,8 +929,12 @@ const DATA = {
 
     const counts = document.getElementById("counts");
     (DATA.counts || []).forEach(function (metric) {
-      const card = document.createElement("article");
+      const card = document.createElement("button");
+      card.type = "button";
       card.className = "count";
+      card.setAttribute("aria-haspopup", "dialog");
+      const key = metric.label.toLowerCase() === "buys" ? "buys" : "sales";
+      card.setAttribute("data-modal", key);
       const label = document.createElement("p");
       label.className = "metric-label";
       label.textContent = metric.label;
@@ -827,9 +948,184 @@ const DATA = {
         detail.textContent = metric.detail;
         card.append(detail);
       }
+      const hint = document.createElement("p");
+      hint.className = "count-hint";
+      hint.textContent = "tap for details";
+      card.append(hint);
+      card.addEventListener("click", function () { openModal(key); });
       counts.append(card);
     });
   }
+
+  function money(amount) {
+    return usd(amount);
+  }
+
+  function addCells(tr, values, classNames) {
+    values.forEach(function (value, i) {
+      const td = document.createElement(tr.parentNode && tr.parentNode.tagName === "TFOOT" || tr.classList.contains("total") ? "td" : "td");
+      if (classNames && classNames[i]) td.className = classNames[i];
+      if (value && value.nodeType) td.append(value);
+      else td.textContent = value == null ? "" : String(value);
+      tr.append(td);
+    });
+  }
+
+  function tagEl(tag) {
+    if (!tag || !DATA.tags[tag]) return document.createTextNode("");
+    const span = document.createElement("span");
+    span.className = "tag tag-" + tag;
+    span.textContent = DATA.tags[tag].label;
+    return span;
+  }
+
+  function linkEl(url) {
+    if (!url || !/^https:\/\//i.test(url)) return document.createTextNode("");
+    const a = document.createElement("a");
+    a.href = url;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.textContent = "View listing";
+    a.title = url;
+    return a;
+  }
+
+  let modalOpener = null;
+
+  function closeModal() {
+    const modal = document.getElementById("detail-modal");
+    if (modal.hidden) return;
+    modal.hidden = true;
+    document.body.classList.remove("modal-open");
+    if (modalOpener && typeof modalOpener.focus === "function") modalOpener.focus();
+    modalOpener = null;
+  }
+
+  function openModal(kind) {
+    const modal = document.getElementById("detail-modal");
+    const title = document.getElementById("modal-title");
+    const thead = document.getElementById("modal-thead");
+    const tbody = document.getElementById("modal-tbody");
+    const tfoot = document.getElementById("modal-tfoot");
+    thead.replaceChildren();
+    tbody.replaceChildren();
+    tfoot.replaceChildren();
+    modalOpener = document.activeElement;
+
+    function head(cols) {
+      const tr = document.createElement("tr");
+      cols.forEach(function (col) {
+        const th = document.createElement("th");
+        th.scope = "col";
+        th.textContent = col;
+        tr.append(th);
+      });
+      thead.append(tr);
+    }
+
+    if (kind === "buys") {
+      title.textContent = "Buys";
+      head(["Date", "Item", "Cost", "Tag", "Source", "Link"]);
+      let total = 0;
+      (DATA.buys || []).forEach(function (row) {
+        total += row.cost;
+        const tr = document.createElement("tr");
+        const costTd = document.createElement("td");
+        costTd.className = "num";
+        costTd.textContent = money(row.cost);
+        const tagTd = document.createElement("td");
+        tagTd.append(tagEl(row.tag));
+        const linkTd = document.createElement("td");
+        linkTd.className = "nowrap";
+        linkTd.append(linkEl(row.link));
+        const dateTd = document.createElement("td");
+        dateTd.className = "nowrap";
+        dateTd.textContent = row.date;
+        const itemTd = document.createElement("td");
+        itemTd.textContent = row.item;
+        const sourceTd = document.createElement("td");
+        sourceTd.textContent = row.source || "";
+        tr.append(dateTd, itemTd, costTd, tagTd, sourceTd, linkTd);
+        tbody.append(tr);
+      });
+      const foot = document.createElement("tr");
+      foot.className = "total";
+      const cells = ["", "Total", money(total), "", "", ""];
+      cells.forEach(function (v, i) {
+        const td = document.createElement("td");
+        if (i === 2) td.className = "num";
+        td.textContent = v;
+        foot.append(td);
+      });
+      tfoot.append(foot);
+    } else {
+      title.textContent = "Sales";
+      head(["Date", "Item", "Sale price", "eBay fees", "Postage", "Net", "Link"]);
+      const sums = { sale: 0, fees: 0, postage: 0, net: 0 };
+      (DATA.sales || []).forEach(function (row) {
+        sums.sale += row.sale;
+        sums.fees += row.fees;
+        sums.postage += row.postage;
+        sums.net += row.net;
+        const tr = document.createElement("tr");
+        function num(val, cls) {
+          const td = document.createElement("td");
+          td.className = "num" + (cls ? " " + cls : "");
+          td.textContent = money(val);
+          return td;
+        }
+        const dateTd = document.createElement("td");
+        dateTd.className = "nowrap";
+        dateTd.textContent = row.date;
+        const itemTd = document.createElement("td");
+        itemTd.textContent = row.item;
+        const linkTd = document.createElement("td");
+        linkTd.className = "nowrap";
+        linkTd.append(linkEl(row.link));
+        const netWrap = document.createElement("td");
+        netWrap.className = "num";
+        const netSpan = document.createElement("span");
+        netSpan.className = "amt in";
+        netSpan.textContent = money(row.net);
+        netWrap.append(netSpan);
+        tr.append(dateTd, itemTd, num(row.sale), num(row.fees), num(row.postage), netWrap, linkTd);
+        tbody.append(tr);
+      });
+      const foot = document.createElement("tr");
+      foot.className = "total";
+      function footCell(text, className, node) {
+        const td = document.createElement("td");
+        if (className) td.className = className;
+        if (node) td.append(node);
+        else td.textContent = text;
+        return td;
+      }
+      const netTotal = document.createElement("span");
+      netTotal.className = "amt in";
+      netTotal.textContent = money(sums.net);
+      foot.append(
+        footCell(""),
+        footCell("Total"),
+        footCell(money(sums.sale), "num"),
+        footCell(money(sums.fees), "num"),
+        footCell(money(sums.postage), "num"),
+        footCell("", "num", netTotal),
+        footCell("")
+      );
+      tfoot.append(foot);
+    }
+
+    modal.hidden = false;
+    document.body.classList.add("modal-open");
+    document.getElementById("modal-close").focus();
+  }
+
+  document.getElementById("modal-close").addEventListener("click", closeModal);
+  document.querySelector("#detail-modal .modal-backdrop").addEventListener("click", closeModal);
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") closeModal();
+  });
+
 
   function drawLadder() {
     const host = document.getElementById("ladder-scroll");
