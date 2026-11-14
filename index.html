@@ -415,7 +415,7 @@ const DATA = {
     flex-direction: column;
     gap: 2px;
     margin: 0;
-    padding: 10px 14px 12px;
+    padding: 14px 16px 16px;
     background: var(--surface);
     border: 1px solid #30A46C;
     border-radius: 12px;
@@ -429,13 +429,40 @@ const DATA = {
   .count:hover { border-color: var(--green, #30A46C); background: var(--hover); }
 
   .count .metric-value {
-    font-size: 1.45rem;
+    font-size: clamp(1.45rem, 2.5vw, 1.85rem);
   }
 
-  .count-hint {
-    margin: 4px 0 0;
-    font-size: 12px;
-    color: var(--muted);
+  .count-btn {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+    min-height: 40px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 999px;
+    background: #30A46C;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 650;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .count-btn:hover { background: #259560; color: #ffffff; }
+
+  .count-btn:focus-visible {
+    outline: 2px solid #30A46C;
+    outline-offset: 3px;
+  }
+
+  [data-theme="dark"] .count-btn { background: #3cbc78; color: #0b1a12; }
+
+  [data-theme="dark"] .count-btn:hover { background: #5DDBA0; color: #0b1a12; }
+
+  [data-theme="dark"] .count-btn:focus-visible {
+    outline-color: #5DDBA0;
   }
 
   .modal {
@@ -929,10 +956,8 @@ const DATA = {
 
     const counts = document.getElementById("counts");
     (DATA.counts || []).forEach(function (metric) {
-      const card = document.createElement("button");
-      card.type = "button";
+      const card = document.createElement("article");
       card.className = "count";
-      card.setAttribute("aria-haspopup", "dialog");
       const key = metric.label.toLowerCase() === "buys" ? "buys" : "sales";
       card.setAttribute("data-modal", key);
       const label = document.createElement("p");
@@ -948,10 +973,18 @@ const DATA = {
         detail.textContent = metric.detail;
         card.append(detail);
       }
-      const hint = document.createElement("p");
-      hint.className = "count-hint";
-      hint.textContent = "tap for details";
-      card.append(hint);
+      const action = document.createElement("button");
+      action.type = "button";
+      action.className = "count-btn";
+      action.setAttribute("aria-haspopup", "dialog");
+      const actionLabel = key === "buys" ? "View buys ›" : "View sales ›";
+      action.textContent = key === "buys" ? "View buys ›" : "View sales ›";
+      action.setAttribute("aria-label", actionLabel);
+      action.addEventListener("click", function (event) {
+        event.stopPropagation();
+        openModal(key);
+      });
+      card.append(action);
       card.addEventListener("click", function () { openModal(key); });
       counts.append(card);
     });
