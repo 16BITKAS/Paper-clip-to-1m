@@ -24,11 +24,11 @@
    ============================================================================ */
 const DATA = {
   title: "Flip to $1M Dashboard",
-  footer: "Status as of Nov 17, 2026",
-  intro: "The bankroll is $159.07 after the $21.20 PS2 games net, and four listings could add about $214 more.",
+  footer: "Status as of Nov 19, 2026",
+  intro: "The bankroll is $174.64 after the $15.57 55-CD lot net, and three listings could add about $139 more.",
   nextMove: {
     title: "Next move",
-    body: "The four remaining listings ask $214.24 combined."
+    body: "The three remaining listings ask $139.24 combined."
   },
   sections: {
     ladder: "Doubling ladder to $1M",
@@ -37,15 +37,15 @@ const DATA = {
   metrics: [
     {
       label: "Bankroll",
-      value: "💰 $159.07",
-      detail: "After $21.20 PS2 games net",
-      amount: 159.07
+      value: "💰 $174.64",
+      detail: "After $15.57 55-CD lot net",
+      amount: 174.64
     },
     {
       label: "Listed, asking",
-      value: "🏷️ $214.24",
-      detail: "4 active listings",
-      amount: 214.24
+      value: "🏷️ $139.24",
+      detail: "3 active listings",
+      amount: 139.24
     },
     {
       label: "Initial money invested",
@@ -62,7 +62,7 @@ const DATA = {
     },
     {
       label: "Sales",
-      value: "6",
+      value: "7",
       detail: "Completed sold listings"
     }
   ],
@@ -80,13 +80,14 @@ const DATA = {
     { date: "11/11", item: "Nintendo Donkey Kong Country 2: Diddy's Kong Quest SNES NTSC-U/C Game", sale: 20, fees: 3.27, postage: 6.4, net: 10.33, link: "https://www.ebay.com/itm/237176017749" },
     { date: "11/13", item: "8 Rock CDs Lot (Green Day American Idiot single, INXS Live Baby Live, Temple of the Dog, Eleanor McEvoy What's Following Me?, Alice in Chains Sap, Whitesnake Slide It In, Guns N' Roses The Spaghetti Incident?, Incubus Make Yourself)", sale: 24.39, fees: 4.41, postage: 5.86, net: 14.12, link: "https://www.ebay.com/itm/237174006449" },
     { date: "11/13", item: "Nintendo NES Game Lot of 8 Tested Working Mario Duck Hunt Klax Wrestling", sale: 45.98, fees: 7.07, postage: 7.24, net: 31.67, link: "https://www.ebay.com/itm/237175940613" },
-    { date: "11/17", item: "PS2 NFS Underground (CIB) + Midnight Club 3 DUB Remix bundle", sale: 35.59, fees: 8.8, postage: 5.59, net: 21.2, link: "https://www.ebay.com/itm/237170543785" }
+    { date: "11/17", item: "PS2 NFS Underground (CIB) + Midnight Club 3 DUB Remix bundle", sale: 35.59, fees: 8.8, postage: 5.59, net: 21.2, link: "https://www.ebay.com/itm/237170543785" },
+    { date: "11/19", item: "55 CD Lot R&B Hip Hop Soul 90s 2000s Prince Janet Jackson Mariah Carey AS IS", sale: 40, fees: 11.2, postage: 13.23, net: 15.57, link: "https://www.ebay.com/itm/237172643068" }
   ],
   ladder: {
     start: 10.4,
     steps: 18,
-    youAmount: 159.07,
-    youLabel: "You: $159.07"
+    youAmount: 174.64,
+    youLabel: "You: $174.64"
   },
   filters: [
     { id: "all", label: "All" },
@@ -181,16 +182,6 @@ const DATA = {
       link: null
     },
     {
-      date: "11/08",
-      item: "55 CD Lot R&B Hip Hop Soul (AS IS)",
-      kind: "listed",
-      amount: 75,
-      tag: null,
-      details: "$75 OBO + $10 Media Mail (lowered 11/11 from $150); water-damaged from lot 1708",
-      source: "eBay",
-      link: "https://www.ebay.com/itm/237172643068"
-    },
-    {
       date: "11/09",
       item: "30 Hip Hop R&B CD Lot",
       kind: "listed",
@@ -279,6 +270,16 @@ const DATA = {
       details: "Sold $30 + $5.59 ship = $35.59 gross, less $8.80 fees ($5.24 transaction + $3.56 ad fee) and $5.59 label; net $21.20",
       source: "eBay",
       link: "https://www.ebay.com/itm/237170543785"
+    },
+    {
+      date: "11/19",
+      item: "55 CD Lot R&B Hip Hop Soul (AS IS)",
+      kind: "sale",
+      amount: 15.57,
+      tag: null,
+      details: "Sold $40.00 gross excluding $2.70 tax, less $11.20 fees ($6.93 transaction + $4.27 ad fee) and $13.23 label; net $15.57",
+      source: "eBay",
+      link: "https://www.ebay.com/itm/237172643068"
     }
   ]
 };
