@@ -24,8 +24,8 @@
    ============================================================================ */
 const DATA = {
   title: "Flip to $1M Dashboard",
-  footer: "Status as of Nov 19, 2026",
-  intro: "The bankroll is $174.64 after the $15.57 55-CD lot net, and three listings could add about $139 more.",
+  footer: "Status as of Nov 26, 2026",
+  intro: "The bankroll is $183.13 after the $8.49 iPhone box net, and three listings could add about $139 more.",
   nextMove: {
     title: "Next move",
     body: "The three remaining listings ask $139.24 combined."
@@ -37,9 +37,9 @@ const DATA = {
   metrics: [
     {
       label: "Bankroll",
-      value: "💰 $174.64",
-      detail: "Last Sale: 55-CD lot, +$15.57 net",
-      amount: 174.64
+      value: "💰 $183.13",
+      detail: "Last Sale: iPhone 17 Pro Max box, +$8.49 net",
+      amount: 183.13
     },
     {
       label: "Listed, asking",
@@ -62,7 +62,7 @@ const DATA = {
     },
     {
       label: "Sales",
-      value: "7",
+      value: "8",
       detail: "Completed sold listings"
     }
   ],
@@ -81,13 +81,14 @@ const DATA = {
     { date: "11/13", item: "8 Rock CDs Lot (Green Day American Idiot single, INXS Live Baby Live, Temple of the Dog, Eleanor McEvoy What's Following Me?, Alice in Chains Sap, Whitesnake Slide It In, Guns N' Roses The Spaghetti Incident?, Incubus Make Yourself)", sale: 24.39, fees: 4.41, postage: 5.86, net: 14.12, link: "https://www.ebay.com/itm/237174006449" },
     { date: "11/13", item: "Nintendo NES Game Lot of 8 Tested Working Mario Duck Hunt Klax Wrestling", sale: 45.98, fees: 7.07, postage: 7.24, net: 31.67, link: "https://www.ebay.com/itm/237175940613" },
     { date: "11/17", item: "PS2 NFS Underground (CIB) + Midnight Club 3 DUB Remix bundle", sale: 35.59, fees: 8.8, postage: 5.59, net: 21.2, link: "https://www.ebay.com/itm/237170543785" },
-    { date: "11/19", item: "55 CD Lot R&B Hip Hop Soul 90s 2000s Prince Janet Jackson Mariah Carey AS IS", sale: 40, fees: 11.2, postage: 13.23, net: 15.57, link: "https://www.ebay.com/itm/237172643068", short: "55-CD lot" }
+    { date: "11/19", item: "55 CD Lot R&B Hip Hop Soul 90s 2000s Prince Janet Jackson Mariah Carey AS IS", sale: 40, fees: 11.2, postage: 13.23, net: 15.57, link: "https://www.ebay.com/itm/237172643068", short: "55-CD lot" },
+    { date: "11/26", item: "Apple iPhone 17 Pro Max 512GB Blue (A3257, MFXM4LL/A) BOX ONLY & OEM Cable", sale: 21.55, fees: 6.53, postage: 6.53, net: 8.49, link: "https://www.ebay.com/itm/237188880476", short: "iPhone 17 Pro Max box" }
   ],
   ladder: {
     start: 10.4,
     steps: 18,
-    youAmount: 174.64,
-    youLabel: "You: $174.64"
+    youAmount: 183.13,
+    youLabel: "You: $183.13"
   },
   filters: [
     { id: "all", label: "All" },
@@ -280,6 +281,16 @@ const DATA = {
       details: "Sold $40.00 gross excluding $2.70 tax, less $11.20 fees ($6.93 transaction + $4.27 ad fee) and $13.23 label; net $15.57",
       source: "eBay",
       link: "https://www.ebay.com/itm/237172643068"
+    },
+    {
+      date: "11/26",
+      item: "iPhone 17 Pro Max box only + OEM cable",
+      kind: "sale",
+      amount: 8.49,
+      tag: null,
+      details: "Sold $15.00 + $6.55 ship = $21.55 gross excluding $1.50 tax, less $6.53 fees ($3.53 transaction + $3.00 ad fee) and $6.53 label; net $8.49; household item, no new money",
+      source: "eBay",
+      link: "https://www.ebay.com/itm/237188880476"
     }
   ]
 };
